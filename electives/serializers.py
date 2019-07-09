@@ -37,3 +37,5 @@ class ClassroomSerializer(serializers.ModelSerializer):
         
     def create(self, validated_data):
         return Classroom.objects.create_classroom(**validated_data)
+    
+    items = Classroom.objects.all()

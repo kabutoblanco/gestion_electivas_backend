@@ -1,7 +1,8 @@
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer
 import json
 
 from rest_framework.status import (
@@ -16,6 +17,8 @@ from rest_framework_jwt.settings import api_settings
 
 from .serializers import UserSerializer, ClassroomSerializer, SemesterSerializer, ScheduleSerializer, AvaliableHourSerializer
 from .models import Schedule, AvaliableHour
+from django.core import serializers
+from django.http import HttpResponse
 
 # Create your views here.
 # 1er HU: Work 1
@@ -47,10 +50,13 @@ class SemesterRegistration(APIView):
         return Response(status=HTTP_201_CREATED)
 
 # 1er HU: Work 3
-class ClassroomRegistration(APIView):
+class ClassroomRegistration(generics.ListCreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ClassroomSerializer
     def post(self, request, format=None):
+        queryset = self.serializer_class.items.values('classroom_id')
+        return HttpResponse(queryset, content_type='application/json')  
+    def put(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
