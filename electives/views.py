@@ -54,8 +54,9 @@ class ClassroomRegistration(generics.ListCreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ClassroomSerializer
     def post(self, request, format=None):
-        queryset = self.serializer_class.items.values('classroom_id')
-        return HttpResponse(queryset, content_type='application/json')  
+        queryset = self.serializer_class.items.all()
+        qs_json = serializers.serialize('json', queryset, fields=('classroom_id'))
+        return HttpResponse(qs_json, content_type='application/json')  
     def put(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
