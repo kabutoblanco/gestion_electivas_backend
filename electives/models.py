@@ -108,7 +108,7 @@ class Faculty(models.Model):
     state = models.BooleanField(default=True)
     
     def __str__(self):
-        return '{}'.format(self.name)
+        return '{} | {}'.format(self.id, self.name)
         
 class Program(models.Model):
     program_id = models.CharField(max_length=32, unique=True)  
