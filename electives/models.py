@@ -146,9 +146,6 @@ class Semester(models.Model):
     
     objects = SemesterManager()
     
-    class Meta:
-        unique_together = ('year', 'period')
-    
     def __str__(self):
         return '{}-{}'.format(self.year, self.period)
 
@@ -232,4 +229,14 @@ class StudentVote(models.Model):
     
     class Meta:
         unique_together = ('student', 'schedule')
+        
+class ProfessorVote(models.Model):
+    date_reg = models.DateTimeField(default=timezone.now())
+    date_mod = models.DateTimeField(default=timezone.now())
+    state = models.BooleanField(default=True)
+    professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
+    schedule = models.ForeignKey(CourseSchedule, on_delete=models.CASCADE)    
+    
+    class Meta:
+        unique_together = ('professor', 'schedule')
 
