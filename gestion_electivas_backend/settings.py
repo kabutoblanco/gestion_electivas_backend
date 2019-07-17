@@ -32,7 +32,7 @@ AUTH_USER_MODEL = 'electives.User'
 
 JWT_AUTH = {
     'JWT_ALGORITHM': 'HS256',
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=15)
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=30000)
 }
 
 CORS_ORIGIN_ALLOW_ALL = True

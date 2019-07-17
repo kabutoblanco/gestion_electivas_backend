@@ -14,9 +14,10 @@ from rest_framework.status import (
 
 from django.contrib.auth import authenticate
 from rest_framework_jwt.settings import api_settings
+from django.views.decorators.csrf import csrf_exempt
 
 from .serializers import UserSerializer, ClassroomSerializer, SemesterSerializer, ScheduleSerializer, AvaliableHourSerializer
-from .models import Schedule, AvaliableHour
+from .models import Schedule, AvaliableHour, Classroom
 from django.core import serializers
 from django.http import HttpResponse
 
@@ -55,13 +56,20 @@ class ClassroomRegistration(generics.ListCreateAPIView):
     serializer_class = ClassroomSerializer
     def post(self, request, format=None):
         queryset = self.serializer_class.items.all()
-        qs_json = serializers.serialize('json', queryset, fields=('classroom_id'))
+        qs_json = serializers.serialize('json', queryset, fields=('id', 'classroom_id', 'capacity'))
         return HttpResponse(qs_json, content_type='application/json')  
     def put(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
+        print(request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=HTTP_201_CREATED)
+    @csrf_exempt
+    # csrf temporal
+    def delete(self, id, format=None):
+        classroom = Classroom.objects.get(pk=id)
+        classroom.delete()
+        return HttpResponse(status=HTTP_200_OK)
 
 class SchedulesRegistration(APIView):
     permission_classes = (AllowAny,)

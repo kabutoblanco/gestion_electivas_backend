@@ -8,5 +8,6 @@ urlpatterns = [
     path('api/semester/', SemesterRegistration.as_view(), name="semester-register"),
     path('api/schedule/', SchedulesRegistration.as_view(), name="schedules-register"),
     path('api/classroom/', ClassroomRegistration.as_view(), name="classroom-register"),
+    path('api/deleteclassroom/<int:id>', ClassroomRegistration.delete),
     path('api/file/', StudentsUploadView.as_view(), name="students-regiters"),
 ]
