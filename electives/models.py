@@ -169,7 +169,7 @@ class Enrrollment(models.Model):
     course = models.ForeignKey(CourseDetail, on_delete=models.CASCADE)
     
 class Classroom(models.Model):
-    classroom_id = models.CharField(max_length=8)
+    classroom_id = models.CharField(max_length=8, unique=True)
     capacity = models.IntegerField(default=0)
     description = models.CharField(max_length=64)
     date_reg = models.DateTimeField(default=timezone.now())
