@@ -70,7 +70,6 @@ class ClassroomManager(BaseUserManager):
                          faculty=faculty)
         classroom.save()
         return classroom
-        
 
 #Models
 class Secretary(User):
@@ -169,7 +168,7 @@ class Enrrollment(models.Model):
     course = models.ForeignKey(CourseDetail, on_delete=models.CASCADE)
     
 class Classroom(models.Model):
-    classroom_id = models.CharField(max_length=8, unique=True)
+    classroom_id = models.CharField(max_length=8)
     capacity = models.IntegerField(default=0)
     description = models.CharField(max_length=64)
     date_reg = models.DateTimeField(default=timezone.now())
@@ -179,8 +178,11 @@ class Classroom(models.Model):
     
     objects = ClassroomManager()
     
+    class Meta:
+        unique_together = ('classroom_id', 'faculty')
+    
     def __str__(self):
-        return '{}'.format(self.classroom_id)
+        return '{} {}'.format(self.id, self.faculty)
 
 class Schedule(models.Model):
     time_from = models.TimeField(default=timezone.now())
@@ -207,11 +209,11 @@ class AvaliableHour(models.Model):
     
     objects = AvaliableHourManager()
     
-    def __str__(self):
-        return '{} || {}'.format(self.classroom, self.schedule)
-    
     class Meta:
         unique_together = ('schedule', 'classroom')
+    
+    def __str__(self):
+        return '{} || {}'.format(self.classroom, self.schedule)
     
 class CourseSchedule(models.Model):
     date_reg = models.DateTimeField(default=timezone.now())

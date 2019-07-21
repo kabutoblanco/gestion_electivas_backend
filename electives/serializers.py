@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Secretary, Semester, Schedule, AvaliableHour, Classroom
+from .models import Secretary, Semester, Schedule, AvaliableHour, Classroom, Faculty
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,6 +28,7 @@ class AvaliableHourSerializer(serializers.ModelSerializer):
         fields = ('classroom', 'schedule')
         
     def create(self, validated_data):
+        print(validated_data)
         return AvaliableHour.objects.create_hour(**validated_data)
     
 class ClassroomSerializer(serializers.ModelSerializer):
@@ -36,6 +37,17 @@ class ClassroomSerializer(serializers.ModelSerializer):
         fields = ('classroom_id', 'capacity', 'description', 'faculty')
         
     def create(self, validated_data):
+        print(validated_data)
         return Classroom.objects.create_classroom(**validated_data)
     
     items = Classroom.objects
+
+class FacultySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Faculty
+        fields = ('classroom_id', 'capacity', 'description', 'faculty')
+        
+    # def create(self, validated_data):
+    #     return Classroom.objects.create_classroom(**validated_data)
+    
+    items = Faculty.objects
