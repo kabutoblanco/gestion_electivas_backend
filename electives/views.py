@@ -31,11 +31,11 @@ class SecretaryLogin(APIView):
         username = request.data.get("username")
         password = request.data.get("password")
         if username is None or password is None:
-            return Response({'error': 'Please provide both username and password'}, status=HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Ingrese usuario y constraseña'}, status=HTTP_400_BAD_REQUEST)
         user = authenticate(username=username, password=password)
         serializer = UserSerializer(user, read_only=True, many=False)
         if not user:
-            return Response({'error': 'Invalid Credentials'}, status=HTTP_404_NOT_FOUND)
+            return Response({'error': 'El usuario no existe'}, status=HTTP_404_NOT_FOUND)
         jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
         jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
         payload = jwt_payload_handler(user)
@@ -131,7 +131,30 @@ class SchedulesRegistration(APIView):
                 print("fallo") 
         return Response(status=HTTP_201_CREATED)
     def post(self, request, format=None):
-        schedules = request.data["schedules"]
+        schedules_delete = request.data["schedules_delete"]
+        schedules_add = request.data["schedules_add"]
+        classroom = request.data["id"]
+        for schedule_delete in schedules_delete:
+            q1 = AvaliableHour.objects.filter(schedule=schedule_delete.get('schedule'), classroom=classroom).first();
+            q1.delete()
+        for schedule_add in schedules_add:
+            serializer = self.serializer_schedule(data=schedule_add)
+            if (serializer.is_valid(raise_exception=False)):
+                register = serializer.save()
+                object_avaliable = {"classroom": int(classroom), "schedule": register.id}            
+            else:                
+                register = Schedule.objects.filter(time_from=schedule_add["time_from"], time_to=schedule_add["time_to"], day=schedule_add["day"])
+                object_avaliable = {"classroom": int(classroom), "schedule": register.first().id}   
+            print(register)         
+            json_avaliable = json.dumps(object_avaliable)
+            json_avaliable = json.loads(json_avaliable)
+            serializer = self.serializer_avaliable(data=json_avaliable)
+            if (serializer.is_valid(raise_exception=False)):
+                print("ok") 
+                serializer.save()
+            else:
+                print("fallo") 
+        return Response(status=HTTP_201_CREATED)
 
 #TODO
 class StudentsUploadView(APIView):
