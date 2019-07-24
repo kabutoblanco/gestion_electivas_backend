@@ -9,6 +9,8 @@ urlpatterns = [
     path('api/schedule/', SchedulesRegistration.as_view(), name="schedules-register"),
     path('api/schedule/<int:id>', SchedulesRegistration.get, name="schedules-register"),
     path('api/classroom/', ClassroomRegistration.as_view(), name="classroom-register"),
+    path('api/classroom/count/', ClassroomRegistration.count),
+    path('api/classroom/limit/<int:init>/<int:end>', ClassroomRegistration.limit),
     path('api/getclassroom/<int:id>', ClassroomGet.get),
     path('api/faculty/', FacultyAPI.as_view(), name="faculty"),
     path('api/deleteclassroom/<int:id>', ClassroomRegistration.delete),

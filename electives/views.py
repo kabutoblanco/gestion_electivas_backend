@@ -65,9 +65,17 @@ class ClassroomRegistration(generics.ListCreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ClassroomSerializer
     def get(self, request, format=None):
+        print(request)
         queryset = self.serializer_class.items.all()
         qs_json = serializers.serialize('json', queryset, fields=('id', 'classroom_id', 'capacity'))
         return HttpResponse(qs_json, content_type='application/json')  
+    @csrf_exempt
+    def limit(self, init, end, format=None):
+        print(init)
+        print(end)
+        queryset = Classroom.objects.all()[init:end]
+        qs_json = serializers.serialize('json', queryset, fields=('id', 'classroom_id', 'capacity'))
+        return HttpResponse(qs_json, content_type='application/json')
     def put(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -89,6 +97,10 @@ class ClassroomRegistration(generics.ListCreateAPIView):
         classroom = Classroom.objects.get(pk=id)
         classroom.delete()
         return HttpResponse(status=HTTP_200_OK)
+    def count(self, format=None):
+        count = Classroom.objects.all().count()
+        print(count)
+        return HttpResponse(count, status=HTTP_200_OK)
 
 class ClassroomGet(APIView):
     permission_classes = (AllowAny,)
