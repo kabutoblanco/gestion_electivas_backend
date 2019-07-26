@@ -9,8 +9,10 @@ class UserSerializer(serializers.ModelSerializer):
 class SemesterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Semester
-        fields = ('year', 'period', 'from_date', 'until_date', 'from_date_vote', 'until_date_vote')
+        fields = ('year', 'period', 'from_date', 'until_date')
         
+    items = Semester.objects
+    
     def create(self, validated_data):
         return Semester.objects.create_semester(**validated_data)
     

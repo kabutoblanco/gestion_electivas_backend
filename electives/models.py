@@ -40,13 +40,11 @@ class StudentManager(BaseUserManager):
         return student
     
 class SemesterManager(BaseUserManager):
-    def create_semester(self, year, period, from_date, until_date, from_date_vote, until_date_vote):
+    def create_semester(self, year, period, from_date, until_date):
         semester = Semester(year=year,
                             period=period,
                             from_date=from_date,
-                            until_date=until_date,
-                            from_date_vote=from_date_vote, 
-                            until_date_vote=until_date_vote)
+                            until_date=until_date,)
         semester.save()
         return semester
 
@@ -102,8 +100,8 @@ class Student(User):
         
 class Faculty(models.Model):
     name = models.CharField(max_length=64)
-    date_reg = models.DateTimeField(default=timezone.now())
-    date_mod = models.DateTimeField(default=timezone.now())
+    date_reg = models.DateTimeField(auto_now=True)
+    date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     
     def __str__(self):
@@ -112,8 +110,8 @@ class Faculty(models.Model):
 class Program(models.Model):
     program_id = models.CharField(max_length=32, unique=True)  
     name = models.CharField(max_length=32)   
-    date_reg = models.DateTimeField(default=timezone.now())
-    date_mod = models.DateTimeField(default=timezone.now())
+    date_reg = models.DateTimeField(auto_now=True)
+    date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
     
@@ -124,8 +122,8 @@ class Course(models.Model):
     course_id = models.CharField(max_length=32)  
     name = models.CharField(max_length=32)    
     description = models.CharField(max_length=64)
-    date_reg = models.DateTimeField(default=timezone.now())
-    date_mod = models.DateTimeField(default=timezone.now())
+    date_reg = models.DateTimeField(auto_now=True)
+    date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     program = models.ForeignKey(Program, on_delete=models.CASCADE)
     
@@ -137,22 +135,25 @@ class Semester(models.Model):
     period = models.IntegerField(default=0)
     from_date = models.DateField(default=timezone.now)
     until_date = models.DateField(default=timezone.now)
-    from_date_vote = models.DateTimeField(default=timezone.now)
-    until_date_vote = models.DateTimeField(default=timezone.now)
-    date_reg = models.DateTimeField(default=timezone.now())
-    date_mod = models.DateTimeField(default=timezone.now())
+    date_reg = models.DateTimeField(auto_now=True)
+    date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     
     objects = SemesterManager()
     
+    class Meta:
+        unique_together = ('year', 'period')
+    
     def __str__(self):
-        return '{}-{}'.format(self.year, self.period)
+        return '{} | {}-{}'.format(self.id, self.year, self.period)
 
 class CourseDetail(models.Model):
     quota = models.IntegerField(default=0)
     priority = models.IntegerField(default=0)
-    date_reg = models.DateTimeField(default=timezone.now())
-    date_mod = models.DateTimeField(default=timezone.now())
+    from_date_vote = models.DateField(default=timezone.now)
+    until_date_vote = models.DateField(default=timezone.now)
+    date_reg = models.DateTimeField(auto_now=True)
+    date_mod = models.DateTimeField(auto_now=True)
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE) 
     proffesor = models.ForeignKey(Professor, on_delete=models.CASCADE)
@@ -161,8 +162,8 @@ class CourseDetail(models.Model):
         unique_together = ('semester', 'course')
     
 class Enrrollment(models.Model):
-    date_reg = models.DateTimeField(default=timezone.now())
-    date_mod = models.DateTimeField(default=timezone.now())
+    date_reg = models.DateTimeField(auto_now=True)
+    date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     course = models.ForeignKey(CourseDetail, on_delete=models.CASCADE)
@@ -171,8 +172,8 @@ class Classroom(models.Model):
     classroom_id = models.CharField(max_length=8)
     capacity = models.IntegerField(default=0)
     description = models.CharField(max_length=64)
-    date_reg = models.DateTimeField(default=timezone.now())
-    date_mod = models.DateTimeField(default=timezone.now())
+    date_reg = models.DateTimeField(auto_now=True)
+    date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
     
@@ -185,11 +186,11 @@ class Classroom(models.Model):
         return '{} {}'.format(self.id, self.faculty)
 
 class Schedule(models.Model):
-    time_from = models.TimeField(default=timezone.now())
-    time_to = models.TimeField(default=timezone.now())
+    time_from = models.TimeField()
+    time_to = models.TimeField()
     day = models.CharField(max_length=16)
-    date_reg = models.DateTimeField(default=timezone.now())
-    date_mod = models.DateTimeField(default=timezone.now())
+    date_reg = models.DateTimeField(auto_now=True)
+    date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     
     objects = ScheduleManager()
@@ -201,8 +202,8 @@ class Schedule(models.Model):
         return '{} - {} | {}'.format(self.time_from, self.time_to, self.day)
 
 class AvaliableHour(models.Model):
-    date_reg = models.DateTimeField(default=timezone.now())
-    date_mod = models.DateTimeField(default=timezone.now())
+    date_reg = models.DateTimeField(auto_now=True)
+    date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE)
@@ -216,15 +217,15 @@ class AvaliableHour(models.Model):
         return '{} || {}'.format(self.classroom, self.schedule)
     
 class CourseSchedule(models.Model):
-    date_reg = models.DateTimeField(default=timezone.now())
-    date_mod = models.DateTimeField(default=timezone.now())
+    date_reg = models.DateTimeField(auto_now=True)
+    date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     avaliable = models.ForeignKey(AvaliableHour, on_delete=models.CASCADE)
     course = models.ForeignKey(CourseDetail, on_delete=models.CASCADE)
     
 class StudentVote(models.Model):
-    date_reg = models.DateTimeField(default=timezone.now())
-    date_mod = models.DateTimeField(default=timezone.now())
+    date_reg = models.DateTimeField(auto_now=True)
+    date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     schedule = models.ForeignKey(CourseSchedule, on_delete=models.CASCADE)    
@@ -233,8 +234,8 @@ class StudentVote(models.Model):
         unique_together = ('student', 'schedule')
         
 class ProfessorVote(models.Model):
-    date_reg = models.DateTimeField(default=timezone.now())
-    date_mod = models.DateTimeField(default=timezone.now())
+    date_reg = models.DateTimeField(auto_now=True)
+    date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
     schedule = models.ForeignKey(CourseSchedule, on_delete=models.CASCADE)    

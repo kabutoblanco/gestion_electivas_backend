@@ -47,10 +47,17 @@ class SemesterRegistration(APIView):
     permission_classes = (AllowAny,)
     serializer_class = SemesterSerializer
     def post(self, request, format=None):
+        print(request.data.get('year'))
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(status=HTTP_201_CREATED)
+        serializer.save()        
+        queryset = self.serializer_class.items.all().filter(year=request.data.get('year'), period=request.data.get('period'))
+        qs_json = serializers.serialize('json', queryset)
+        return HttpResponse(qs_json, status=HTTP_201_CREATED)
+    def get(self, format=None):
+        queryset = self.serializer_class.items.all()
+        qs_json = serializers.serialize('json', queryset)
+        return HttpResponse(qs_json, content_type='application/json')  
 
 class FacultyAPI(generics.ListCreateAPIView):
     permission_classes = (AllowAny,)
