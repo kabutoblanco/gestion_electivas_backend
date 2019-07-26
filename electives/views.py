@@ -80,9 +80,9 @@ class ClassroomRegistration(generics.ListCreateAPIView):
     def limit(self, init, end, format=None):
         print(init)
         print(end)
-        queryset = Classroom.objects.all()[init:end]
-        qs_json = serializers.serialize('json', queryset, fields=('id', 'classroom_id', 'capacity'))
-        return HttpResponse(qs_json, content_type='application/json')
+        queryset = Classroom.objects.all()[init:end].values('id', 'classroom_id', 'capacity', 'faculty__name')
+        queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)   
+        return HttpResponse(queryset, content_type='application/json') 
     def put(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
