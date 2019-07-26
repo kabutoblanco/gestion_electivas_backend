@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import ugettext_lazy as _
-from .models import User, Secretary, Professor, Student, Course, Semester, Schedule, Classroom, Faculty, AvaliableHour, Program
+from .models import *
 
 # Register your models here.
 admin.site.register(Professor)
@@ -13,6 +13,8 @@ admin.site.register(Faculty)
 admin.site.register(Program)
 admin.site.register(AvaliableHour)
 admin.site.register(Course)
+admin.site.register(CourseDetail)
+admin.site.register(Enrrollment)
 
 class UserProfileInline(admin.StackedInline):
     model = Secretary

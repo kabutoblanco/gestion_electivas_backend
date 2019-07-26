@@ -4,10 +4,13 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 # Create your models here.
+
+
 class User(AbstractUser):
     user_id = models.IntegerField(default=0, unique=True)
-    username = models.CharField(max_length=255, blank=True, null=True, unique=True)
-    email = models.EmailField(_('email address'), unique=True)    
+    username = models.CharField(
+        max_length=255, blank=True, null=True, unique=True)
+    email = models.EmailField(_('email address'), unique=True)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
@@ -16,29 +19,27 @@ class User(AbstractUser):
         return "{}".format(self.username)
 
 
-#Manager models
-class ProfessorManager(BaseUserManager):    
-    def create_professor(self, first_name, last_name, email, password):
-        if email is None:
-            raise TypeError('Users must have an email address.')
-        username = email.split('@')[0]
-        proffesor = Professor(username=username, first_name=first_name, last_name=last_name, 
-                            email=self.normalize_email(email),)
+# Manager models
+class ProfessorManager(BaseUserManager):
+    def create_professor(self, user_id, first_name, last_name, username, password):
+        email = username + "@unicauca.edu.co"
+        proffesor = Professor(user_id=user_id, username=username, first_name=first_name, last_name=last_name,
+                              email=self.normalize_email(email),)
         proffesor.set_password(password)
         proffesor.save()
         return proffesor
-    
+
+
 class StudentManager(BaseUserManager):
-    def create_student(self, first_name, last_name, email, password):
-        if email is None:
-            raise TypeError('Users must have an email address.')
-        username = email.split('@')[0]
-        student = Student(username=username, first_name=first_name, last_name=last_name, 
-                            email=self.normalize_email(email),)
+    def create_student(self, user_id, first_name, last_name, username, password):
+        email = username + "@unicauca.edu.co"
+        student = Student(user_id=user_id, username=username, first_name=first_name, last_name=last_name,
+                          email=self.normalize_email(email),)
         student.set_password(password)
         student.save()
         return student
-    
+
+
 class SemesterManager(BaseUserManager):
     def create_semester(self, year, period, from_date, until_date):
         semester = Semester(year=year,
@@ -48,88 +49,126 @@ class SemesterManager(BaseUserManager):
         semester.save()
         return semester
 
+
 class ScheduleManager(BaseUserManager):
     def create_schedule(self, time_from, time_to, day):
         schedule = Schedule(time_from=time_from, time_to=time_to, day=day)
         schedule.save()
         return schedule
-    
+
+
 class AvaliableHourManager(BaseUserManager):
     def create_hour(self, classroom, schedule):
         hour = AvaliableHour(classroom=classroom, schedule=schedule)
         hour.save()
         return hour
 
+
 class ClassroomManager(BaseUserManager):
     def create_classroom(self, classroom_id, capacity, description, faculty):
-        classroom = Classroom(classroom_id=classroom_id, 
-                         capacity=capacity, 
-                         description=description, 
-                         faculty=faculty)
+        classroom = Classroom(classroom_id=classroom_id,
+                              capacity=capacity,
+                              description=description,
+                              faculty=faculty)
         classroom.save()
         return classroom
 
-#Models
+
+class EnrrollmentManager(BaseUserManager):
+    def create_enrrollment(self, student, course):
+        enrrollment = Enrrollment(student=student,
+                                  course=course)
+        enrrollment.save()
+        return enrrollment
+
+
+class CourseManager(BaseUserManager):
+    def create_course(self, quota, priority, from_date_vote, until_date_vote, semester, course, professor):
+        course = CourseDetail(quota=quota,
+                            priority=priority,
+                            from_date_vote=from_date_vote,
+                            until_date_vote=until_date_vote,
+                            semester=semester,
+                            course=course,
+                            professor=professor)
+        course.save()
+        return course
+
+
+class CourseManager(BaseUserManager):
+    pass
+
+# Models
+
+
 class Secretary(User):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
-    
+
     class Meta:
         verbose_name = 'Secretary'
         verbose_name_plural = 'Secreataries'
-    
-class Professor(User):  
+
+
+class Professor(User):
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
-    
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+
     objects = ProfessorManager()
-    
+
     class Meta:
         verbose_name = 'Professor'
         verbose_name_plural = 'Professors'
-    
-class Student(User):  
+
+
+class Student(User):
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
-    
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+
     objects = StudentManager()
-    
+
     class Meta:
         verbose_name = 'Student'
         verbose_name_plural = 'Students'
-        
+
+
 class Faculty(models.Model):
     name = models.CharField(max_length=64)
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
-    
+
     def __str__(self):
         return '{} | {}'.format(self.id, self.name)
-        
+
+
 class Program(models.Model):
-    program_id = models.CharField(max_length=32, unique=True)  
-    name = models.CharField(max_length=32)   
+    program_id = models.CharField(max_length=32, unique=True)
+    name = models.CharField(max_length=32)
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
-    
+
     def __str__(self):
         return '{}'.format(self.name)
-    
+
+
 class Course(models.Model):
-    course_id = models.CharField(max_length=32)  
-    name = models.CharField(max_length=32)    
+    course_id = models.CharField(max_length=32)
+    name = models.CharField(max_length=32)
     description = models.CharField(max_length=64)
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     program = models.ForeignKey(Program, on_delete=models.CASCADE)
-    
+
+    objects = CourseManager()
+
     def __str__(self):
         return '{}. {}'.format(self.id, self.name)
-        
+
+
 class Semester(models.Model):
     year = models.IntegerField(default=0)
     period = models.IntegerField(default=0)
@@ -138,14 +177,15 @@ class Semester(models.Model):
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
-    
+
     objects = SemesterManager()
-    
+
     class Meta:
         unique_together = ('year', 'period')
-    
+
     def __str__(self):
         return '{} | {}-{}'.format(self.id, self.year, self.period)
+
 
 class CourseDetail(models.Model):
     quota = models.IntegerField(default=0)
@@ -155,19 +195,32 @@ class CourseDetail(models.Model):
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE) 
-    proffesor = models.ForeignKey(Professor, on_delete=models.CASCADE)
-    
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
+
     class Meta:
         unique_together = ('semester', 'course')
-    
+
+    def __str__(self):
+        return '{}-{}'.format(self.course, self.professor)
+
+
 class Enrrollment(models.Model):
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     course = models.ForeignKey(CourseDetail, on_delete=models.CASCADE)
-    
+
+    objects = EnrrollmentManager()
+
+    class Meta:
+        unique_together = ('student', 'course')
+
+    def __str__(self):
+        return '{}. {}'.format(self.course, self.student)
+
+
 class Classroom(models.Model):
     classroom_id = models.CharField(max_length=8)
     capacity = models.IntegerField(default=0)
@@ -176,14 +229,15 @@ class Classroom(models.Model):
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
-    
+
     objects = ClassroomManager()
-    
+
     class Meta:
         unique_together = ('classroom_id', 'faculty')
-    
+
     def __str__(self):
         return '{} {}'.format(self.id, self.faculty)
+
 
 class Schedule(models.Model):
     time_from = models.TimeField()
@@ -192,14 +246,15 @@ class Schedule(models.Model):
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
-    
+
     objects = ScheduleManager()
-    
+
     class Meta:
         unique_together = ('time_from', 'time_to', 'day')
-        
+
     def __str__(self):
         return '{} - {} | {}'.format(self.time_from, self.time_to, self.day)
+
 
 class AvaliableHour(models.Model):
     date_reg = models.DateTimeField(auto_now=True)
@@ -207,39 +262,41 @@ class AvaliableHour(models.Model):
     state = models.BooleanField(default=True)
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE)
-    
+
     objects = AvaliableHourManager()
-    
+
     class Meta:
         unique_together = ('schedule', 'classroom')
-    
+
     def __str__(self):
         return '{} || {}'.format(self.classroom, self.schedule)
-    
+
+
 class CourseSchedule(models.Model):
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     avaliable = models.ForeignKey(AvaliableHour, on_delete=models.CASCADE)
     course = models.ForeignKey(CourseDetail, on_delete=models.CASCADE)
-    
+
+
 class StudentVote(models.Model):
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    schedule = models.ForeignKey(CourseSchedule, on_delete=models.CASCADE)    
-    
+    schedule = models.ForeignKey(CourseSchedule, on_delete=models.CASCADE)
+
     class Meta:
         unique_together = ('student', 'schedule')
-        
+
+
 class ProfessorVote(models.Model):
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
-    schedule = models.ForeignKey(CourseSchedule, on_delete=models.CASCADE)    
-    
+    schedule = models.ForeignKey(CourseSchedule, on_delete=models.CASCADE)
+
     class Meta:
         unique_together = ('professor', 'schedule')
-
