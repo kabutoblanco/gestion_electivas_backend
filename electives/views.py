@@ -218,6 +218,7 @@ class StudentAPI(APIView):
     serializer_enrrollment = EnrrollmentSerializer
 
     def post(self, request, format=None):
+        print(request.FILES)
         csv_file = request.FILES["csv_file"]
         if not csv_file.name.endswith(".csv"):
             return HttpResponse(status=HTTP_400_BAD_REQUEST)
