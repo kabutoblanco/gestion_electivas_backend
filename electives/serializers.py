@@ -89,4 +89,12 @@ class CourseSerializer(serializers.ModelSerializer):
         return CourseDetail.objects.create_course(**validated_data)
 
     items = CourseDetail.objects
+    
+class CourseScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourseSchedule
+        fields = ('avaliable', 'course')
+
+    def create(self, validated_data):
+        return CourseSchedule.objects.create_schedule(**validated_data)
 

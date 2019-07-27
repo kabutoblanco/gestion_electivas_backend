@@ -26,7 +26,7 @@ from django.http import HttpResponse
 # LOGIN
 
 
-class SecretaryAccessAPI(APIView):
+class UserAccessAPI(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, format=None):
@@ -260,7 +260,7 @@ class StudentAPI(APIView):
 
 class CourseAPI(APIView):
     permission_classes = (AllowAny,)
-    serializer_class = CourseSerializer
+    serializer_class = CourseSerializer    
 
     # REQUESTS CRUD
     def get_id(self, id, format=None):
@@ -304,30 +304,6 @@ class CourseAPI(APIView):
         return HttpResponse(count, status=HTTP_200_OK)
     # - - - - -
 
-    # def post(self, request, format=None):
-    #     print(request.data["id"])
-    #     id = request.data["id"]
-    #     modelo = Classroom.objects.get(pk=id)
-    #     modelo.classroom_id = request.data["classroom_id"]
-    #     modelo.capacity = request.data["capacity"]
-    #     modelo.faculty = Faculty.objects.get(pk=request.data["faculty"])
-    #     modelo.description = request.data["description"]
-    #     modelo.save()
-    #     return Response(status=HTTP_200_OK)
-
-    # def put(self, request, format=None):
-    #     serializer = self.serializer_class(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     serializer.save()
-    #     return Response(status=HTTP_201_CREATED)
-
-    # @csrf_exempt
-    # def delete(self, id, format=None):
-    #     classroom = Classroom.objects.get(pk=id)
-    #     classroom.delete()
-    #     return HttpResponse(status=HTTP_200_OK)
-    # - - - - -
-
 
 class AvaliableHourAPI(APIView):
     permission_classes = (AllowAny,)
@@ -347,13 +323,6 @@ class AvaliableHourAPI(APIView):
             'id', 'schedule__id', 'schedule__day', 'schedule__time_from', 'schedule__time_to')
         queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
         return HttpResponse(queryset, content_type="application/json")
-
-    # def get(self, request, format=None):
-    #     queryset = CourseDetail.objects.all().values('id', 'course__id', 'course__course_id',
-    #                                                  'course__name', 'professor__first_name', 'professor__last_name')
-    #     queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
-    #     return HttpResponse(queryset, content_type="application/json")
-    # - - - - -
 
     # OTHERS REQUESTS
     @csrf_exempt
@@ -378,3 +347,22 @@ class AvaliableHourAPI(APIView):
         count = CourseDetail.objects.filter(semester=id).count()
         return HttpResponse(count, status=HTTP_200_OK)
     # - - - - -
+
+
+class CourseScheduleAPI(APIView):
+    permission_classes = (AllowAny,)
+    serializer_class = CourseScheduleSerializer
+
+    def put(self, request, format=None):
+        print(request.data["schedules"][0].get('id'))
+        course = request.data["course"]
+        schedules = request.data["schedules"]
+        for schedule in schedules:
+            object_avaliable = {
+                "avaliable": schedule.get('id'), "course": course}
+            json_avaliable = json.dumps(object_avaliable)
+            json_avaliable = json.loads(json_avaliable)
+            serializer = self.serializer_class(data=json_avaliable)
+            if (serializer.is_valid(raise_exception=False)):
+                register = serializer.save()
+        return Response(status=HTTP_201_CREATED)

@@ -7,7 +7,7 @@ urlpatterns = [
     path('api/verificate/', verify_jwt_token),
     # - - - - -
     # LOGIN
-    path('api/login/', SecretaryAccessAPI.as_view()),
+    path('api/login/', UserAccessAPI.as_view()),
     # - - - - -
     # SEMESTER
     path('api/semester/', SemesterAPI.as_view()),
@@ -43,5 +43,8 @@ urlpatterns = [
     path('api/course/count/<int:id>', CourseAPI.count_id),
     path('api/course/limit/<int:init>/<int:end>', CourseAPI.limit),
     path('api/course/limit/<int:init>/<int:end>/<int:id>', CourseAPI.limit_id),
+    # - - - - -
+    # COURSE SCHEDULE
+    path('api/course/schedule/', CourseScheduleAPI.as_view()),
     # - - - - -
 ]

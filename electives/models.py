@@ -93,6 +93,13 @@ class CourseManager(BaseUserManager):
                             professor=professor)
         course.save()
         return course
+    
+class CourseScheduleManager(BaseUserManager):
+    def create_schedule(self, avaliable, course):
+        course = CourseSchedule(avaliable=avaliable,
+                            course=course)
+        course.save()
+        return course
 
 # Models
 
@@ -273,7 +280,15 @@ class CourseSchedule(models.Model):
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     avaliable = models.ForeignKey(AvaliableHour, on_delete=models.CASCADE)
-    course = models.ForeignKey(CourseDetail, on_delete=models.CASCADE)
+    course = models.ForeignKey(CourseDetail, on_delete=models.CASCADE)    
+    
+    objects = CourseScheduleManager()
+
+    class Meta:
+        unique_together = ('avaliable', 'course')
+
+    def __str__(self):
+        return '{} || {}'.format(self.avaliable, self.course)
 
 
 class StudentVote(models.Model):

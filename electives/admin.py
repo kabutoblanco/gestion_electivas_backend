@@ -15,10 +15,7 @@ admin.site.register(AvaliableHour)
 admin.site.register(Course)
 admin.site.register(CourseDetail)
 admin.site.register(Enrrollment)
-
-class UserProfileInline(admin.StackedInline):
-    model = Secretary
-    can_delete = False
+admin.site.register(CourseSchedule)
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -38,4 +35,3 @@ class UserAdmin(BaseUserAdmin):
     list_display = ('email', 'first_name', 'last_name', 'is_staff')
     search_fields = ('email', 'first_name', 'last_name')
     ordering = ('email',)
-    inlines = (UserProfileInline, )
