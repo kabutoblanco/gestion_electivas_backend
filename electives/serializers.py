@@ -77,10 +77,16 @@ class FacultySerializer(serializers.ModelSerializer):
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseDetail
-        fields = ('classroom_id', 'capacity', 'description', 'faculty')
+        fields = ('quota',
+                'priority',
+                "from_date_vote",
+                "until_date_vote",
+                "course",
+                "professor",
+                "semester")
 
     def create(self, validated_data):
-        return CourseDetail.objects.create_classroom(**validated_data)
+        return CourseDetail.objects.create_course(**validated_data)
 
-    items = Classroom.objects
+    items = CourseDetail.objects
 

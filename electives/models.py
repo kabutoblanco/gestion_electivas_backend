@@ -94,10 +94,6 @@ class CourseManager(BaseUserManager):
         course.save()
         return course
 
-
-class CourseManager(BaseUserManager):
-    pass
-
 # Models
 
 
@@ -161,9 +157,7 @@ class Course(models.Model):
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
-    program = models.ForeignKey(Program, on_delete=models.CASCADE)
-
-    objects = CourseManager()
+    program = models.ForeignKey(Program, on_delete=models.CASCADE)    
 
     def __str__(self):
         return '{}. {}'.format(self.id, self.name)
@@ -190,13 +184,15 @@ class Semester(models.Model):
 class CourseDetail(models.Model):
     quota = models.IntegerField(default=0)
     priority = models.IntegerField(default=0)
-    from_date_vote = models.DateField(default=timezone.now)
-    until_date_vote = models.DateField(default=timezone.now)
+    from_date_vote = models.DateTimeField(default=timezone.now)
+    until_date_vote = models.DateTimeField(default=timezone.now)
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
+
+    objects = CourseManager()
 
     class Meta:
         unique_together = ('semester', 'course')

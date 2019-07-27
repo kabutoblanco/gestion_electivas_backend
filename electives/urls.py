@@ -28,10 +28,14 @@ urlpatterns = [
     # - - - - -
     # AVALIABLE_HOUR
     path('api/avaliable/', AvaliableHourAPI.as_view()),
+    path('api/avaliable/get/<int:id>', AvaliableHourAPI.get),
     path('api/avaliable/<int:id>', AvaliableHourAPI.get_id),
     # - - - - -
     # STUDENT
     path('api/file/', StudentAPI.as_view()),
+    # - - - - -
+    # PROFESSOR
+    path('api/professor/', ProfessorAPI.as_view()),
     # - - - - -
     # COURSE
     path('api/course/', CourseAPI.as_view()),

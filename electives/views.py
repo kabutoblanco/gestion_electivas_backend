@@ -46,14 +46,28 @@ class SecretaryAccessAPI(APIView):
 # - - - - -
 
 
+class ProfessorAPI(APIView):
+    permission_classes = (AllowAny,)
+
+    # REQUESTS CRUD
+    def get_id(self, id, format=None):
+        pass
+
+    def get(self, request, format=None):
+        queryset = Professor.objects.all().values('id', 'first_name', 'last_name')
+        queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
+        return HttpResponse(queryset, content_type="application/json")
+
+
 class SemesterAPI(APIView):
     permission_classes = (AllowAny,)
     serializer_class = SemesterSerializer
 
     # REQUESTS CRUD
     def post(self, request, format=None):
+        print(request.data)
         serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(raise_exception=False)
         serializer.save()
         queryset = self.serializer_class.items.all().filter(
             year=request.data.get("year"), period=request.data.get("period"))
@@ -257,6 +271,13 @@ class CourseAPI(APIView):
                                                      'course__name', 'professor__first_name', 'professor__last_name')
         queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
         return HttpResponse(queryset, content_type="application/json")
+
+    def put(self, request, format=None):
+        print(request.data)
+        serializer = self.serializer_class(data=request.data)
+        if (serializer.is_valid(raise_exception=True)):
+            serializer.save()
+        return Response(status=HTTP_201_CREATED)
     # - - - - -
 
     # OTHERS REQUESTS
@@ -313,8 +334,16 @@ class AvaliableHourAPI(APIView):
     serializer_class = AvaliableHourSerializer
 
     # REQUESTS CRUD
+    @csrf_exempt
     def get_id(self, id, format=None):
-        queryset = CourseDetail.objects.filter(classroom=id).values(
+        queryset = AvaliableHour.objects.filter(classroom=id).values(
+            'id', 'schedule__id', 'schedule__day', 'schedule__time_from', 'schedule__time_to')
+        queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
+        return HttpResponse(queryset, content_type="application/json")
+
+    @csrf_exempt
+    def get(self, id, format=None):
+        queryset = AvaliableHour.objects.filter(id=id).values(
             'id', 'schedule__id', 'schedule__day', 'schedule__time_from', 'schedule__time_to')
         queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
         return HttpResponse(queryset, content_type="application/json")
