@@ -30,15 +30,20 @@ urlpatterns = [
     path('api/avaliable/', AvaliableHourAPI.as_view()),
     path('api/avaliable/get/<int:id>', AvaliableHourAPI.get),
     path('api/avaliable/<int:id>', AvaliableHourAPI.get_id),
+    path('api/avaliable/course/<int:id>', CourseScheduleAPI.get_id),
     # - - - - -
     # STUDENT
     path('api/file/', StudentAPI.as_view()),
+    path('api/student/count/<int:id>', StudentAPI.count_id),
+    path('api/student/limit/<int:init>/<int:end>/<int:id>', StudentAPI.limit_id),
     # - - - - -
     # PROFESSOR
     path('api/professor/', ProfessorAPI.as_view()),
     # - - - - -
     # COURSE
     path('api/course/', CourseAPI.as_view()),
+    path('api/course/delete/<int:id>', CourseAPI.delete),
+    path('api/course/<int:id>', CourseAPI.get_id),
     path('api/course/count/', CourseAPI.count),
     path('api/course/count/<int:id>', CourseAPI.count_id),
     path('api/course/limit/<int:init>/<int:end>', CourseAPI.limit),

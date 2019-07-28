@@ -111,7 +111,6 @@ class ClassroomAPI(APIView):
         return HttpResponse(queryset, content_type="application/json")
 
     def post(self, request, format=None):
-        print(request.data["id"])
         id = request.data["id"]
         modelo = Classroom.objects.get(pk=id)
         modelo.classroom_id = request.data["classroom_id"]
@@ -217,6 +216,25 @@ class StudentAPI(APIView):
     serializer_student = StudentSerializer
     serializer_enrrollment = EnrrollmentSerializer
 
+    def get(self, request, format=None):
+        queryset = Student.objects.all().values(
+            'id', 'user_id', 'first_name', 'last_name')
+        queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
+        return HttpResponse(queryset, content_type="application/json")
+
+    # OTHERS REQUESTS
+    @csrf_exempt
+    def limit_id(self, init, end, id, format=None):
+        queryset = Enrrollment.objects.filter(course__semester=id)[init:end].values(
+            'student__id', 'student__user_id', 'student__first_name', 'student__last_name')
+        queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
+        return HttpResponse(queryset, content_type="application/json")
+
+    def count_id(self, id, format=None):
+        count = Enrrollment.objects.filter(course__semester=id).count()
+        return HttpResponse(count, status=HTTP_200_OK)
+    # - - - - -
+
     def post(self, request, format=None):
         print(request.FILES)
         csv_file = request.FILES["csv_file"]
@@ -251,7 +269,7 @@ class StudentAPI(APIView):
                 json_enrrollment = json.dumps(object_enrrollment)
                 json_enrrollment = json.loads(json_enrrollment)
                 serializer = self.serializer_enrrollment(data=json_enrrollment)
-                if (serializer.is_valid(raise_exception=True)):
+                if (serializer.is_valid(raise_exception=False)):
                     serializer.save()
                 else:
                     response = response + "\tFila (curso): " + str(i) + "\n"
@@ -261,11 +279,14 @@ class StudentAPI(APIView):
 
 class CourseAPI(APIView):
     permission_classes = (AllowAny,)
-    serializer_class = CourseSerializer    
+    serializer_class = CourseSerializer
 
     # REQUESTS CRUD
     def get_id(self, id, format=None):
-        pass
+        queryset = CourseDetail.objects.filter(id=id).values(
+            'course__id', 'course__course_id', 'professor__id', 'quota', 'priority')
+        queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
+        return HttpResponse(queryset, content_type="application/json")
 
     def get(self, request, format=None):
         queryset = CourseDetail.objects.all().values('id', 'course__id', 'course__course_id',
@@ -279,6 +300,25 @@ class CourseAPI(APIView):
         if (serializer.is_valid(raise_exception=True)):
             serializer.save()
         return Response(status=HTTP_201_CREATED)
+
+    def post(self, request, format=None):
+        id = request.data["id"]
+        modelo = CourseDetail.objects.get(pk=id)
+        modelo.quota = request.data["quota"]
+        modelo.priority = request.data["priority"]
+        modelo.from_date_vote = request.data["from_date_vote"]
+        modelo.until_date_vote = request.data["until_date_vote"]
+        modelo.professor = Professor.objects.get(id=request.data["professor"])
+        modelo.course = Course.objects.get(id=request.data["course"])
+        modelo.save()
+        return Response(status=HTTP_200_OK)
+
+    @csrf_exempt
+    def delete(self, id, format=None):
+        course = CourseDetail.objects.get(pk=id)
+        print(course)
+        course.delete()
+        return HttpResponse(status=HTTP_200_OK)
     # - - - - -
 
     # OTHERS REQUESTS
@@ -354,8 +394,15 @@ class CourseScheduleAPI(APIView):
     permission_classes = (AllowAny,)
     serializer_class = CourseScheduleSerializer
 
+    # REQUESTS CRUD
+    @csrf_exempt
+    def get_id(self, id, format=None):
+        queryset = CourseSchedule.objects.filter(course=id).values(
+            'id', 'avaliable__schedule__id', 'avaliable__schedule__day', 'avaliable__schedule__time_from', 'avaliable__schedule__time_to')
+        queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
+        return HttpResponse(queryset, content_type="application/json")
+
     def put(self, request, format=None):
-        print(request.data["schedules"][0].get('id'))
         course = request.data["course"]
         schedules = request.data["schedules"]
         for schedule in schedules:
@@ -366,4 +413,18 @@ class CourseScheduleAPI(APIView):
             serializer = self.serializer_class(data=json_avaliable)
             if (serializer.is_valid(raise_exception=False)):
                 register = serializer.save()
+        return Response(status=HTTP_201_CREATED)
+
+    def post(self, request, format=None):
+        schedules_delete = request.data["avaliable_hours_delete"]
+        schedules_add = request.data["avaliable_hours_add"]
+        course = request.data["id"]
+        print(schedules_add)
+        for schedule_delete in schedules_delete:
+            q1 = CourseSchedule.objects.get(id=schedule_delete.get("id"))
+            q1.delete()
+        for schedule_add in schedules_add:
+            serializer = self.serializer_class(data=schedule_add)
+            if (serializer.is_valid(raise_exception=True)):
+                serializer.save()
         return Response(status=HTTP_201_CREATED)
