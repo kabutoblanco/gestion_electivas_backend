@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Count
 
 import json
 
@@ -32,6 +33,8 @@ class UserAccessAPI(APIView):
     def post(self, request, format=None):
         username = request.data.get("username")
         password = request.data.get("password")
+        queryset = User.objects.all().values('groups')
+        print(queryset)
         if username is None or password is None:
             return Response({"error": "Ingrese usuario y constraseña"}, status=HTTP_400_BAD_REQUEST)
         user = authenticate(username=username, password=password)
@@ -211,6 +214,70 @@ class SchedulesAPI(APIView):
     # - - - - -
 
 
+class EnrrollmentAPI(APIView):
+    permission_classes = (AllowAny,)
+    serializer_class = EnrrollmentSerializer
+
+    @csrf_exempt
+    def get_id(self, id, semester, format=None):
+        queryset = Enrrollment.objects.filter(student__id=id, course__semester__id=semester).values(
+            'course__id', 'course__course__name', 'course__professor__first_name', 'course__professor__last_name')
+        queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
+        return HttpResponse(queryset, content_type="application/json")
+
+    def put(self, request, format=None):
+        student = request.data["student"]
+        enrrollments = request.data["enrrollments"]
+        id_student = Student.objects.get(user_id=student).id
+        for enrrollment in enrrollments:
+            object_enrrollment = {"student": id_student,
+                                  "course": enrrollment.get("id")}
+            json_enrrollment = json.dumps(object_enrrollment)
+            json_enrrollment = json.loads(json_enrrollment)
+            serializer = self.serializer_class(data=json_enrrollment)
+            if (serializer.is_valid(raise_exception=True)):
+                serializer.save()
+        return Response(status=HTTP_201_CREATED)
+    
+    def post(self, request, format=None):
+        enrrollments_delete = request.data["enrrollments_delete"]
+        enrrollments_add = request.data["enrrollments_add"]
+        student = request.data["student"]
+        for enrrollment_delete in enrrollments_delete:
+            print(enrrollment_delete.get(
+                "course__id"))
+            print(student)
+            q1 = Enrrollment.objects.filter(course=enrrollment_delete.get(
+                "course__id"), student=Student.objects.get(user_id=student).id)
+            print(q1)
+            q1.delete()
+        for enrrollment in enrrollments_add:
+            object_enrrollment = {"student": Student.objects.get(user_id=student).id,
+                                  "course": enrrollment.get("course__id")}
+            json_enrrollment = json.dumps(object_enrrollment)
+            json_enrrollment = json.loads(json_enrrollment)
+            serializer = self.serializer_class(data=json_enrrollment)
+            if (serializer.is_valid(raise_exception=True)):
+                serializer.save()
+        return Response(status=HTTP_201_CREATED)
+
+
+class StudentAuxAPI(APIView):
+    permission_classes = (AllowAny,)
+    serializer_student = StudentSerializer
+    
+    def post(self, request, format=None):
+        print(request)
+        id = request.data["id"]
+        modelo = Student.objects.get(pk=id)
+        modelo.user_id = request.data["user_id"]
+        modelo.first_name = request.data["first_name"]
+        modelo.last_name = request.data["last_name"]
+        modelo.username = request.data["username"]
+        modelo.email = request.data["username"] + "@unicauca.edu.co"
+        modelo.save()
+        return Response(status=HTTP_200_OK)
+
 class StudentAPI(APIView):
     permission_classes = (AllowAny,)
     serializer_student = StudentSerializer
@@ -222,22 +289,36 @@ class StudentAPI(APIView):
         queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
         return HttpResponse(queryset, content_type="application/json")
 
+    @csrf_exempt
+    def get_id(self, id, format=None):
+        queryset = Student.objects.filter(id=id).values(
+            'id', 'user_id', 'first_name', 'last_name', 'username')
+        queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
+        return HttpResponse(queryset, content_type="application/json")
+
+    def put(self, request, format=None):
+        serializer = self.serializer_student(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=HTTP_201_CREATED)
+
     # OTHERS REQUESTS
     @csrf_exempt
     def limit_id(self, init, end, id, format=None):
         queryset = Enrrollment.objects.filter(course__semester=id)[init:end].values(
-            'student__id', 'student__user_id', 'student__first_name', 'student__last_name')
+            'student__id', 'student__user_id', 'student__first_name', 'student__last_name').annotate(Count('student__id'))
         queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
         return HttpResponse(queryset, content_type="application/json")
 
     def count_id(self, id, format=None):
-        count = Enrrollment.objects.filter(course__semester=id).count()
+        count = Enrrollment.objects.filter(course__semester=id).values(
+            'student__id').annotate(Count('student__id')).count()
         return HttpResponse(count, status=HTTP_200_OK)
     # - - - - -
 
     def post(self, request, format=None):
-        print(request.FILES)
         csv_file = request.FILES["csv_file"]
+        semester = request.data['semester']
         if not csv_file.name.endswith(".csv"):
             return HttpResponse(status=HTTP_400_BAD_REQUEST)
         file_data = csv_file.read().decode("utf-8")
@@ -252,18 +333,22 @@ class StudentAPI(APIView):
                 json_student = json.dumps(object_student)
                 json_student = json.loads(json_student)
                 serializer = self.serializer_student(data=json_student)
+
                 if (serializer.is_valid(raise_exception=False)):
+                    print('okkk')
                     serializer.save()
                 else:
                     response = response + \
                         "\tFila (estudiante): " + str(i) + "\n"
                 # FIND STUDENT
+
                 student = Student.objects.filter(
                     user_id=json_student.get('user_id')).first().id
                 # - - - - -
                 # FIND COURSE
-                course = Course.objects.filter(
-                    course_id=fields[4]).first().id
+                course = CourseDetail.objects.filter(
+                    course__course_id=fields[4], semester_id=semester).first().id
+                print(course)
                 # - - - - -
                 object_enrrollment = {"student": student, "course": course}
                 json_enrrollment = json.dumps(object_enrrollment)
@@ -276,6 +361,12 @@ class StudentAPI(APIView):
                 i = i + 1
         return HttpResponse({response}, status=HTTP_200_OK)
 
+    @csrf_exempt
+    def delete(self, id, format=None):
+        student = Student.objects.get(pk=id)
+        student.delete()
+        return HttpResponse(status=HTTP_200_OK)
+
 
 class CourseAPI(APIView):
     permission_classes = (AllowAny,)
@@ -284,7 +375,14 @@ class CourseAPI(APIView):
     # REQUESTS CRUD
     def get_id(self, id, format=None):
         queryset = CourseDetail.objects.filter(id=id).values(
-            'course__id', 'course__course_id', 'professor__id', 'quota', 'priority')
+            'course__id', 'course__course_id', 'professor__id', 'quota', 'priority', 'from_date_vote', 'until_date_vote')
+        queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
+        return HttpResponse(queryset, content_type="application/json")
+
+    @csrf_exempt
+    def get_semester(self, id, format=None):
+        queryset = CourseDetail.objects.filter(semester=id).values(
+            'id', 'course__id', 'course__course_id', 'course__name', 'professor__first_name', 'professor__last_name')
         queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
         return HttpResponse(queryset, content_type="application/json")
 
@@ -316,7 +414,6 @@ class CourseAPI(APIView):
     @csrf_exempt
     def delete(self, id, format=None):
         course = CourseDetail.objects.get(pk=id)
-        print(course)
         course.delete()
         return HttpResponse(status=HTTP_200_OK)
     # - - - - -

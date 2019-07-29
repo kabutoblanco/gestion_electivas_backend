@@ -34,7 +34,13 @@ urlpatterns = [
     # - - - - -
     # STUDENT
     path('api/file/', StudentAPI.as_view()),
+    path('api/enrrollment/', EnrrollmentAPI.as_view()),
+    path('api/enrrollment/<int:id>/<int:semester>', EnrrollmentAPI.get_id),
+    path('api/student/', StudentAPI.as_view()),
+    path('api/student/update/', StudentAuxAPI.as_view()),
+    path('api/student/<int:id>', StudentAPI.get_id),
     path('api/student/count/<int:id>', StudentAPI.count_id),
+    path('api/student/delete/<int:id>', StudentAPI.delete),
     path('api/student/limit/<int:init>/<int:end>/<int:id>', StudentAPI.limit_id),
     # - - - - -
     # PROFESSOR
@@ -44,6 +50,7 @@ urlpatterns = [
     path('api/course/', CourseAPI.as_view()),
     path('api/course/delete/<int:id>', CourseAPI.delete),
     path('api/course/<int:id>', CourseAPI.get_id),
+    path('api/course/semester/<int:id>', CourseAPI.get_semester),
     path('api/course/count/', CourseAPI.count),
     path('api/course/count/<int:id>', CourseAPI.count_id),
     path('api/course/limit/<int:init>/<int:end>', CourseAPI.limit),

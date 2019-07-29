@@ -1,6 +1,7 @@
 from django.db import models
+from django.contrib.auth.models import Group
 from django.utils.translation import ugettext_lazy as _
-from django.utils import timezone
+from datetime import datetime
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 # Create your models here.
@@ -27,6 +28,7 @@ class ProfessorManager(BaseUserManager):
                               email=self.normalize_email(email),)
         proffesor.set_password(password)
         proffesor.save()
+        student.groups.add(Group.objects.get(name='professor'))
         return proffesor
 
 
@@ -34,9 +36,10 @@ class StudentManager(BaseUserManager):
     def create_student(self, user_id, first_name, last_name, username, password):
         email = username + "@unicauca.edu.co"
         student = Student(user_id=user_id, username=username, first_name=first_name, last_name=last_name,
-                          email=self.normalize_email(email),)
+                          email=self.normalize_email(email),)        
         student.set_password(password)
         student.save()
+        student.groups.add(Group.objects.get(name='student'))
         return student
 
 
@@ -46,7 +49,7 @@ class SemesterManager(BaseUserManager):
                             period=period,
                             from_date=from_date,
                             until_date=until_date,)
-        semester.save()
+        semester.save()        
         return semester
 
 
@@ -173,8 +176,8 @@ class Course(models.Model):
 class Semester(models.Model):
     year = models.IntegerField(default=0)
     period = models.IntegerField(default=0)
-    from_date = models.DateField(default=timezone.now)
-    until_date = models.DateField(default=timezone.now)
+    from_date = models.DateField(default=datetime.now)
+    until_date = models.DateField(default=datetime.now)
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
@@ -191,8 +194,8 @@ class Semester(models.Model):
 class CourseDetail(models.Model):
     quota = models.IntegerField(default=0)
     priority = models.IntegerField(default=0)
-    from_date_vote = models.DateTimeField(default=timezone.now)
-    until_date_vote = models.DateTimeField(default=timezone.now)
+    from_date_vote = models.DateTimeField(default=datetime.now)
+    until_date_vote = models.DateTimeField(default=datetime.now)
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
