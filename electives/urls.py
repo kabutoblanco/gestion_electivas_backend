@@ -58,6 +58,8 @@ urlpatterns = [
     # - - - - -
     # COURSE SCHEDULE
     path('api/course/schedule/', CourseScheduleAPI.as_view()),
+    path('api/course/schedule/professor/<int:id>', CourseScheduleProfessorAPI.get_id),
+    path('api/course/schedule/professor/<int:avaliable>/<int:course>', CourseScheduleProfessorAPI.get_schedules),
     # - - - - -
     # ENRROLLMENT
     path('api/enrrollment/count/<int:id>/<str:user>', EnrrollmentAPI.count_id),
