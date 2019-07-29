@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 # Create your models here.
 
+
 class User(AbstractUser):
     user_id = models.IntegerField(default=0, unique=True)
     username = models.CharField(
@@ -25,11 +26,12 @@ class SecretaryManager(BaseUserManager):
     def create_secretary(self, user_id, first_name, last_name, username, password):
         email = username + "@unicauca.edu.co"
         secretary = Secretary(user_id=user_id, username=username, first_name=first_name, last_name=last_name,
-                          email=self.normalize_email(email),)        
+                              email=self.normalize_email(email),)
         secretary.set_password(password)
         secretary.save()
         secretary.groups.add(Group.objects.get(name='secretary'))
         return secretary
+
 
 class ProfessorManager(BaseUserManager):
     def create_professor(self, user_id, first_name, last_name, username, password):
@@ -46,7 +48,7 @@ class StudentManager(BaseUserManager):
     def create_student(self, user_id, first_name, last_name, username, password):
         email = username + "@unicauca.edu.co"
         student = Student(user_id=user_id, username=username, first_name=first_name, last_name=last_name,
-                          email=self.normalize_email(email),)        
+                          email=self.normalize_email(email),)
         student.set_password(password)
         student.save()
         student.groups.add(Group.objects.get(name='student'))
@@ -59,7 +61,7 @@ class SemesterManager(BaseUserManager):
                             period=period,
                             from_date=from_date,
                             until_date=until_date,)
-        semester.save()        
+        semester.save()
         return semester
 
 
@@ -98,19 +100,20 @@ class EnrrollmentManager(BaseUserManager):
 class CourseManager(BaseUserManager):
     def create_course(self, quota, priority, from_date_vote, until_date_vote, semester, course, professor):
         course = CourseDetail(quota=quota,
-                            priority=priority,
-                            from_date_vote=from_date_vote,
-                            until_date_vote=until_date_vote,
-                            semester=semester,
-                            course=course,
-                            professor=professor)
+                              priority=priority,
+                              from_date_vote=from_date_vote,
+                              until_date_vote=until_date_vote,
+                              semester=semester,
+                              course=course,
+                              professor=professor)
         course.save()
         return course
-    
+
+
 class CourseScheduleManager(BaseUserManager):
     def create_schedule(self, avaliable, course):
         course = CourseSchedule(avaliable=avaliable,
-                            course=course)
+                                course=course)
         course.save()
         return course
 
@@ -177,7 +180,7 @@ class Course(models.Model):
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
-    program = models.ForeignKey(Program, on_delete=models.CASCADE)    
+    program = models.ForeignKey(Program, on_delete=models.CASCADE)
 
     def __str__(self):
         return '{}. {}'.format(self.id, self.name)
@@ -293,8 +296,8 @@ class CourseSchedule(models.Model):
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
     avaliable = models.ForeignKey(AvaliableHour, on_delete=models.CASCADE)
-    course = models.ForeignKey(CourseDetail, on_delete=models.CASCADE)    
-    
+    course = models.ForeignKey(CourseDetail, on_delete=models.CASCADE)
+
     objects = CourseScheduleManager()
 
     class Meta:

@@ -218,6 +218,22 @@ class EnrrollmentAPI(APIView):
     permission_classes = (AllowAny,)
     serializer_class = EnrrollmentSerializer
 
+    # OTHERS REQUESTS
+    @csrf_exempt
+    def limit_id(self, init, end, id, user, format=None):
+        user = User.objects.get(username=user).id
+        queryset = Enrrollment.objects.filter(course__semester=id, student=user)[init:end].values(
+            'id', 'course__course_id', 'course__professor__first_name', 'course__professor__last_name', 'course__course__name', 'course__quota')
+        queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
+        return HttpResponse(queryset, content_type="application/json")
+
+    def count_id(self, id, user, format=None):
+        user = User.objects.get(username=user).id
+        count = Enrrollment.objects.filter(course__semester=id, student=user).values(
+            'student__id').count()
+        return HttpResponse(count, status=HTTP_200_OK)
+    # - - - - -
+
     @csrf_exempt
     def get_id(self, id, semester, format=None):
         queryset = Enrrollment.objects.filter(student__id=id, course__semester__id=semester).values(
@@ -267,7 +283,6 @@ class StudentAuxAPI(APIView):
     serializer_student = StudentSerializer
     
     def post(self, request, format=None):
-        print(request)
         id = request.data["id"]
         modelo = Student.objects.get(pk=id)
         modelo.user_id = request.data["user_id"]
