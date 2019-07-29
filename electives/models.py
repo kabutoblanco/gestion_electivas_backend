@@ -6,21 +6,31 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 # Create your models here.
 
-
 class User(AbstractUser):
     user_id = models.IntegerField(default=0, unique=True)
     username = models.CharField(
         max_length=255, blank=True, null=True, unique=True)
     email = models.EmailField(_('email address'), unique=True)
+    password = models.CharField(_('password'), max_length=128)
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ['email', 'first_name', 'last_name', 'password']
 
     def __str__(self):
         return "{}".format(self.username)
 
 
 # Manager models
+class SecretaryManager(BaseUserManager):
+    def create_secretary(self, user_id, first_name, last_name, username, password):
+        email = username + "@unicauca.edu.co"
+        secretary = Secretary(user_id=user_id, username=username, first_name=first_name, last_name=last_name,
+                          email=self.normalize_email(email),)        
+        secretary.set_password(password)
+        secretary.save()
+        secretary.groups.add(Group.objects.get(name='secretary'))
+        return secretary
+
 class ProfessorManager(BaseUserManager):
     def create_professor(self, user_id, first_name, last_name, username, password):
         email = username + "@unicauca.edu.co"
@@ -129,7 +139,7 @@ class Professor(User):
 
 class Student(User):
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name', 'password']
 
     objects = StudentManager()
 
