@@ -97,4 +97,12 @@ class CourseScheduleSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return CourseSchedule.objects.create_schedule(**validated_data)
+    
+class StudentVoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentVote
+        fields = ('student', 'schedule')
+    
+    def create(self, validated_data):
+        return StudentVote.objects.create_studentvote(**validated_data)
 

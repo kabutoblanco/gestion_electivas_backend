@@ -65,4 +65,8 @@ urlpatterns = [
     path('api/enrrollment/count/<int:id>/<str:user>', EnrrollmentAPI.count_id),
     path('api/enrrollment/limit/<int:init>/<int:end>/<int:id>/<str:user>', EnrrollmentAPI.limit_id),
     # - - - - -
+    # STUDENT VOTE
+    path('api/student/vote/', CourseScheduleStudentAPI.as_view()),
+    path('api/student/vote/<int:id>/<str:student>', CourseScheduleStudentAPI.get_id),
+    # - - - - -
 ]

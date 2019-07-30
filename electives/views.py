@@ -549,7 +549,7 @@ class CourseScheduleProfessorAPI(APIView):
     # REQUESTS CRUD
     def get_id(self, id, format=None):
         professor = CourseDetail.objects.get(pk=id).professor
-        queryset = ProfessorVote.objects.filter(professor=4, schedule__course=id).values(
+        queryset = ProfessorVote.objects.filter(professor=professor, schedule__course=id).values(
             'schedule', 'schedule__avaliable__classroom__classroom_id', 'schedule__avaliable__classroom__faculty__name', 'schedule__avaliable__schedule__time_from', 'schedule__avaliable__schedule__time_to', 'schedule__avaliable__schedule__day')
         queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
         return HttpResponse(queryset, content_type="application/json")
@@ -559,3 +559,34 @@ class CourseScheduleProfessorAPI(APIView):
             'id', 'classroom__name', 'classroom__faculy__name', 'avaliable__schedule__time_from', 'avaliable__schedule__time_to', 'avaliable__schedule__day')
         queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
         return HttpResponse(queryset, content_type="application/json")
+    
+class CourseScheduleStudentAPI(APIView):
+    permission_classes = (AllowAny,)
+    serializer_class = StudentVoteSerializer
+    
+    def get_id(self, id, student, format=None):
+        student = Student.objects.get(username=student).id
+        queryset = StudentVote.objects.filter(student=student, schedule__course=id).values(
+            'schedule')
+        queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
+        return HttpResponse(queryset, content_type="application/json")
+    
+    # REQUEST CRUD
+    def put(self, request, format=None):
+        student = request.data["student"]
+        schedules_add = request.data["schedules_add"]
+        schedules_delete = request.data["schedules_delete"]
+        id_student = Student.objects.get(username=student).id
+        for schedule in schedules_delete:
+            vote = StudentVote.objects.get(schedule=schedule.get('schedule'), student=id_student)
+            vote.delete()
+        for schedule in schedules_add:
+            object_schedule = {
+                "student": id_student, "schedule": schedule.get('schedule')}
+            json_schedule = json.dumps(object_schedule)
+            json_schedule = json.loads(json_schedule)
+            serializer = self.serializer_class(data=json_schedule)
+            if (serializer.is_valid(raise_exception=True)):
+                register = serializer.save()
+        return Response(status=HTTP_201_CREATED)
+        

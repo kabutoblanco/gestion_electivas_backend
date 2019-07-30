@@ -116,6 +116,12 @@ class CourseScheduleManager(BaseUserManager):
                                 course=course)
         course.save()
         return course
+    
+class StudentVoteManager(BaseUserManager):
+    def create_studentvote(self, student, schedule):
+        vote = StudentVote(student=student, schedule=schedule)
+        vote.save()
+        return vote
 
 # Models
 
@@ -313,6 +319,8 @@ class StudentVote(models.Model):
     state = models.BooleanField(default=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     schedule = models.ForeignKey(CourseSchedule, on_delete=models.CASCADE)
+    
+    objects = StudentVoteManager()
 
     class Meta:
         unique_together = ('student', 'schedule')
