@@ -4,8 +4,8 @@ from .models import *
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Secretary
-        fields = ('username',)
+        model = User
+        fields = ('username', 'groups')
 
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -105,4 +105,12 @@ class StudentVoteSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         return StudentVote.objects.create_studentvote(**validated_data)
+    
+class ProfessorVoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProfessorVote
+        fields = ('professor', 'schedule')
+    
+    def create(self, validated_data):
+        return ProfessorVote.objects.create_professorvote(**validated_data)
 

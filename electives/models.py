@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group
 from django.utils.translation import ugettext_lazy as _
 from datetime import datetime
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.mail import send_mail
 
 # Create your models here.
 
@@ -51,6 +52,13 @@ class StudentManager(BaseUserManager):
                           email=self.normalize_email(email),)
         student.set_password(password)
         student.save()
+        # send_mail(
+        #     'Registro en la plataforma SGE Unicauca',
+        #     'El estudiante ha sido registrado en la plataforma SGE para poder votar las electivas matriculadas',
+        #     'mdquilindo@unicauca.edu.co',
+        #     [email],
+        #     fail_silently=False,
+        # )
         student.groups.add(Group.objects.get(name='student'))
         return student
 
@@ -116,10 +124,17 @@ class CourseScheduleManager(BaseUserManager):
                                 course=course)
         course.save()
         return course
-    
+
+
 class StudentVoteManager(BaseUserManager):
     def create_studentvote(self, student, schedule):
         vote = StudentVote(student=student, schedule=schedule)
+        vote.save()
+        return vote
+    
+class ProfessorVoteManager(BaseUserManager):
+    def create_professorvote(self, professor, schedule):
+        vote = ProfessorVote(professor=professor, schedule=schedule)
         vote.save()
         return vote
 
@@ -319,7 +334,7 @@ class StudentVote(models.Model):
     state = models.BooleanField(default=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     schedule = models.ForeignKey(CourseSchedule, on_delete=models.CASCADE)
-    
+
     objects = StudentVoteManager()
 
     class Meta:
@@ -332,6 +347,8 @@ class ProfessorVote(models.Model):
     state = models.BooleanField(default=True)
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
     schedule = models.ForeignKey(CourseSchedule, on_delete=models.CASCADE)
+    
+    objects = ProfessorVoteManager()
 
     class Meta:
         unique_together = ('professor', 'schedule')

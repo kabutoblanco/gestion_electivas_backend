@@ -32,8 +32,16 @@ AUTH_USER_MODEL = 'electives.User'
 
 JWT_AUTH = {
     'JWT_ALGORITHM': 'HS256',
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=30000)
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_VERIFY': True,
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=900),
 }
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'mdquilindo@unicauca.edu.co'
+EMAIL_HOST_PASSWORD = 'Caldas11'
+EMAIL_USE_TLS = True
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True

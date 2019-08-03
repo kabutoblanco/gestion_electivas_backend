@@ -1,22 +1,25 @@
 from django.urls import path
-from rest_framework_jwt.views import verify_jwt_token
+from rest_framework_jwt.views import verify_jwt_token, refresh_jwt_token
 from .views import *
 
 urlpatterns = [
     # TOKENS
     path('api/verificate/', verify_jwt_token),
+    path('api/refresh/', refresh_jwt_token),
     # - - - - -
     # LOGIN
     path('api/login/', UserAccessAPI.as_view()),
     # - - - - -
     # SEMESTER
     path('api/semester/', SemesterAPI.as_view()),
+    path('api/semester/<int:id>', SemesterAPI.get_id),
     # - - - - -
     # FACULTY
     path('api/faculty/', FacultyAPI.as_view()),
     # - - - - -
     # CLASSROOM
     path('api/classroom/', ClassroomAPI.as_view()),
+    path('api/getcourse/<int:course>', ClassroomAPI.get_course),
     path('api/getclassroom/<int:id>', ClassroomAPI.get_id),
     path('api/deleteclassroom/<int:id>', ClassroomAPI.delete),
     path('api/classroom/count/', ClassroomAPI.count),
@@ -29,6 +32,9 @@ urlpatterns = [
     # AVALIABLE_HOUR
     path('api/avaliable/', AvaliableHourAPI.as_view()),
     path('api/avaliable/get/<int:id>', AvaliableHourAPI.get),
+    path('api/avaliable/profeesor_get/<int:id>', AvaliableHourAPI.get_professor_id),
+    path('api/avaliable/profeesor_schedule/<int:id>', AvaliableHourAPI.get_professor_schedule),
+    path('api/avaliable/professor/<int:id>/<int:course>', AvaliableHourAPI.get_professor),
     path('api/avaliable/<int:id>', AvaliableHourAPI.get_id),
     path('api/avaliable/course/<int:id>', CourseScheduleAPI.get_id),
     # - - - - -
@@ -60,6 +66,8 @@ urlpatterns = [
     path('api/course/schedule/', CourseScheduleAPI.as_view()),
     path('api/course/schedule/professor/<int:id>', CourseScheduleProfessorAPI.get_id),
     path('api/course/schedule/professor/<int:avaliable>/<int:course>', CourseScheduleProfessorAPI.get_schedules),
+    path('api/course/avaliable/<int:elective>', CourseScheduleProfessorAPI.myschedule_electives),
+    path('api/course/scheduleprofessor/<str:professor>/<int:elective>', CourseScheduleProfessorAPI.myavalible_electives),
     # - - - - -
     # ENRROLLMENT
     path('api/enrrollment/count/<int:id>/<str:user>', EnrrollmentAPI.count_id),
@@ -68,5 +76,10 @@ urlpatterns = [
     # STUDENT VOTE
     path('api/student/vote/', CourseScheduleStudentAPI.as_view()),
     path('api/student/vote/<int:id>/<str:student>', CourseScheduleStudentAPI.get_id),
+    # - - - - -
+    # COURSE PROFESSOR
+    path('api/course/professor/', CourseScheduleProfessorAPI.as_view()),
+    path('api/course/professor/limit/<int:init>/<int:end>/<int:semester>/<str:professor>', CourseScheduleProfessorAPI.limit_electives),
+    path('api/course/professor/count/<int:semester>/<str:professor>', CourseScheduleProfessorAPI.count_electives),
     # - - - - -
 ]
