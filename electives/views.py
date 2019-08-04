@@ -474,7 +474,7 @@ class CourseAPI(APIView):
         return HttpResponse(count, status=HTTP_200_OK)
 
     def get_all(self, format=None):
-        queryset = Course.objects.all()[init:end].values(
+        queryset = Course.objects.all().values(
             'id', 'course_id')
         queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
         return HttpResponse(queryset, content_type="application/json")
