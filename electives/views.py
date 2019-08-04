@@ -51,9 +51,6 @@ class ProfessorAPI(APIView):
     permission_classes = (AllowAny,)
 
     # REQUESTS CRUD
-    def get_id(self, id, format=None):
-        pass
-
     def get(self, request, format=None):
         queryset = Professor.objects.all().values('id', 'first_name', 'last_name')
         queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
@@ -309,7 +306,6 @@ class StudentAuxAPI(APIView):
 class StudentAPI(APIView):
     permission_classes = (AllowAny,)
     serializer_student = StudentSerializer
-    serializer_enrrollment = EnrrollmentSerializer
 
     def get(self, request, format=None):
         queryset = Student.objects.all().values(
@@ -326,8 +322,8 @@ class StudentAPI(APIView):
 
     def put(self, request, format=None):
         serializer = self.serializer_student(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if (serializer.is_valid(raise_exception=False)):
+            serializer.save()
         return Response(status=HTTP_201_CREATED)
 
     # OTHERS REQUESTS

@@ -40,7 +40,7 @@ JWT_AUTH = {
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'mdquilindo@unicauca.edu.co'
-EMAIL_HOST_PASSWORD = 'Caldas11'
+EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = True
 
 CORS_ORIGIN_ALLOW_ALL = True
