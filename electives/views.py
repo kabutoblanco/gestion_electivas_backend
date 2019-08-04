@@ -306,6 +306,7 @@ class StudentAuxAPI(APIView):
 class StudentAPI(APIView):
     permission_classes = (AllowAny,)
     serializer_student = StudentSerializer
+    serializer_enrrollment = EnrrollmentSerializer
 
     def get(self, request, format=None):
         queryset = Student.objects.all().values(

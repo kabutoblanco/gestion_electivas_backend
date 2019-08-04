@@ -197,7 +197,7 @@ class Program(models.Model):
 class Course(models.Model):
     course_id = models.CharField(max_length=32)
     name = models.CharField(max_length=32)
-    description = models.CharField(max_length=64)
+    description = models.CharField(max_length=1024, default="", blank=True)
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
@@ -264,7 +264,7 @@ class Enrrollment(models.Model):
 class Classroom(models.Model):
     classroom_id = models.CharField(max_length=8)
     capacity = models.IntegerField(default=0)
-    description = models.CharField(max_length=64)
+    description = models.CharField(max_length=1024, default="", blank=True)
     date_reg = models.DateTimeField(auto_now=True)
     date_mod = models.DateTimeField(auto_now=True)
     state = models.BooleanField(default=True)
