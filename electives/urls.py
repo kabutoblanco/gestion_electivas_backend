@@ -54,6 +54,7 @@ urlpatterns = [
     # - - - - -
     # COURSE
     path('api/course/', CourseAPI.as_view()),
+    path('api/course/all', CourseAPI.get_all),
     path('api/course/delete/<int:id>', CourseAPI.delete),
     path('api/course/<int:id>', CourseAPI.get_id),
     path('api/course/semester/<int:id>', CourseAPI.get_semester),
