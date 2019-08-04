@@ -52,13 +52,13 @@ class StudentManager(BaseUserManager):
                           email=self.normalize_email(email),)
         student.set_password(password)
         student.save()
-        # send_mail(
-        #     'Registro en la plataforma SGE Unicauca',
-        #     'El estudiante ha sido registrado en la plataforma SGE para poder votar las electivas matriculadas',
-        #     'mdquilindo@unicauca.edu.co',
-        #     [email],
-        #     fail_silently=False,
-        # )
+        send_mail(
+            'Registro en la plataforma SGE Unicauca',
+            'El estudiante ha sido registrado en la plataforma SGE para poder votar las electivas matriculadas',
+            'mdquilindo@unicauca.edu.co',
+            [email],
+            fail_silently=False,
+        )
         student.groups.add(Group.objects.get(name='student'))
         return student
 
