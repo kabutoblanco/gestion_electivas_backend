@@ -133,7 +133,7 @@ class CourseManager(BaseUserManager):
             subject='Registro de electiva | SGE Unicauca',
             body=body,
             from_email='sgeunicauca@gmail.com',
-            to=[email],
+            to=[professor.email],
         )
         email_message.content_subtype = 'html'
         email_message.send()
@@ -151,7 +151,7 @@ class EnrrollmentManager(BaseUserManager):
             subject='Registro de electivas | SGE Unicauca',
             body=body,
             from_email='sgeunicauca@gmail.com',
-            to=[email],
+            to=[student.email],
         )
         email_message.content_subtype = 'html'
         email_message.send()

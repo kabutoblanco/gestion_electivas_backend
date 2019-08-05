@@ -44,6 +44,13 @@ class UserAccessAPI(APIView):
         payload = jwt_payload_handler(user)
         token = jwt_encode_handler(payload)
         return Response({"user": serializer.data, "token": token}, status=HTTP_200_OK)
+
+    def put(self, request, format=None):
+        username = request.data.get("username")
+        password = request.data.get("password")
+        user = User.objects.get(username=username)
+        student.set_password(password)
+        student.save()
 # - - - - -
 
 
