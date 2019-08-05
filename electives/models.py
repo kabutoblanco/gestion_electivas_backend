@@ -47,16 +47,16 @@ class ProfessorManager(BaseUserManager):
         proffesor.set_password(password)
         proffesor.save()
         student.save()
-        # body = render_to_string('newStudent.html', 
-        #     {'first_name': first_name, 'last_name': last_name, 'username': username, 'password': password, 'role': 'docente'},)
-        # email_message = EmailMessage(
-        #     subject='Registro en la plataforma SGE Unicauca',
-        #     body=body,
-        #     from_email='sgeunicauca@gmail.com',
-        #     to=[email],
-        # )
-        # email_message.content_subtype = 'html'
-        # email_message.send()
+        body = render_to_string('newStudent.html',
+            {'first_name': first_name, 'last_name': last_name, 'username': username, 'password': password, 'role': 'docente'},)
+        email_message = EmailMessage(
+            subject='Registro en la plataforma SGE Unicauca',
+            body=body,
+            from_email='sgeunicauca@gmail.com',
+            to=[email],
+        )
+        email_message.content_subtype = 'html'
+        email_message.send()
         student.groups.add(Group.objects.get(name='professor'))
         return proffesor
 
@@ -66,19 +66,19 @@ class StudentManager(BaseUserManager):
         email = username + "@unicauca.edu.co"
         student = Student(user_id=user_id, username=username, first_name=first_name, last_name=last_name,
                           email=self.normalize_email(email),)
-        password = get_random_string(length=6)    
+        password = get_random_string(length=6)
         student.set_password(password)
         student.save()
-        # body = render_to_string('newStudent.html', 
-        #     {'first_name': first_name, 'last_name': last_name, 'username': username, 'password': password, 'role': 'estudiante'},)
-        # email_message = EmailMessage(
-        #     subject='Registro en la plataforma SGE Unicauca',
-        #     body=body,
-        #     from_email='sgeunicauca@gmail.com',
-        #     to=[email],
-        # )
-        # email_message.content_subtype = 'html'
-        # email_message.send()
+        body = render_to_string('newStudent.html',
+            {'first_name': first_name, 'last_name': last_name, 'username': username, 'password': password, 'role': 'estudiante'},)
+        email_message = EmailMessage(
+            subject='Registro en la plataforma SGE Unicauca',
+            body=body,
+            from_email='sgeunicauca@gmail.com',
+            to=[email],
+        )
+        email_message.content_subtype = 'html'
+        email_message.send()
         student.groups.add(Group.objects.get(name='student'))
         return student
 
@@ -120,41 +120,41 @@ class ClassroomManager(BaseUserManager):
 class CourseManager(BaseUserManager):
     def create_course(self, quota, priority, from_date_vote, until_date_vote, semester, course, professor):
         course_detail = CourseDetail(quota=quota,
-                              priority=priority,
-                              from_date_vote=from_date_vote,
-                              until_date_vote=until_date_vote,
-                              semester=semester,
-                              course=course,
-                              professor=professor)
+                                     priority=priority,
+                                     from_date_vote=from_date_vote,
+                                     until_date_vote=until_date_vote,
+                                     semester=semester,
+                                     course=course,
+                                     professor=professor)
         course_detail.save()
-        # body = render_to_string('newElective.html', 
-        #     {'first_name': professor.first_name, 'last_name': professor.last_name, "name": course.name, "from_date_vote": course_detail.from_date_vote},)
-        # email_message = EmailMessage(
-        #     subject='Registro de electiva | SGE Unicauca',
-        #     body=body,
-        #     from_email='sgeunicauca@gmail.com',
-        #     to=[email],
-        # )
-        # email_message.content_subtype = 'html'
-        # email_message.send()
+        body = render_to_string('newElective.html',
+            {'first_name': professor.first_name, 'last_name': professor.last_name, "name": course.name, "from_date_vote": course_detail.from_date_vote},)
+        email_message = EmailMessage(
+            subject='Registro de electiva | SGE Unicauca',
+            body=body,
+            from_email='sgeunicauca@gmail.com',
+            to=[email],
+        )
+        email_message.content_subtype = 'html'
+        email_message.send()
         return course_detail
-    
-    
+
+
 class EnrrollmentManager(BaseUserManager):
     def create_enrrollment(self, student, course):
         enrrollment = Enrrollment(student=student,
-                                  course=course)            
+                                  course=course)
         enrrollment.save()
-        # body = render_to_string('newEnrrollment.html', 
-        #     {'first_name': student.first_name, 'last_name': student.last_name, "name": course.course.name, "from_date_vote": course.from_date_vote, "until_date_vote": course.until_date_vote},)
-        # email_message = EmailMessage(
-        #     subject='Registro de electivas | SGE Unicauca',
-        #     body=body,
-        #     from_email='sgeunicauca@gmail.com',
-        #     to=[email],
-        # )
-        # email_message.content_subtype = 'html'
-        # email_message.send()
+        body = render_to_string('newEnrrollment.html',
+            {'first_name': student.first_name, 'last_name': student.last_name, "name": course.course.name, "from_date_vote": course.from_date_vote, "until_date_vote": course.until_date_vote},)
+        email_message = EmailMessage(
+            subject='Registro de electivas | SGE Unicauca',
+            body=body,
+            from_email='sgeunicauca@gmail.com',
+            to=[email],
+        )
+        email_message.content_subtype = 'html'
+        email_message.send()
         return enrrollment
 
 
@@ -171,7 +171,8 @@ class StudentVoteManager(BaseUserManager):
         vote = StudentVote(student=student, schedule=schedule)
         vote.save()
         return vote
-    
+
+
 class ProfessorVoteManager(BaseUserManager):
     def create_professorvote(self, professor, schedule):
         vote = ProfessorVote(professor=professor, schedule=schedule)
@@ -235,7 +236,7 @@ class Program(models.Model):
 
 
 class Course(models.Model):
-    course_id = models.CharField(max_length=32,unique=True)
+    course_id = models.CharField(max_length=32, unique=True)
     name = models.CharField(max_length=32)
     description = models.CharField(max_length=1024, default="", blank=True)
     date_reg = models.DateTimeField(auto_now=True)
@@ -387,7 +388,7 @@ class ProfessorVote(models.Model):
     state = models.BooleanField(default=True)
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
     schedule = models.ForeignKey(CourseSchedule, on_delete=models.CASCADE)
-    
+
     objects = ProfessorVoteManager()
 
     class Meta:
