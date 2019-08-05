@@ -3,7 +3,12 @@ from django.contrib.auth.models import Group
 from django.utils.translation import ugettext_lazy as _
 from datetime import datetime
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.utils.crypto import get_random_string
+from email.mime.image import MIMEImage
+
+from django.contrib.staticfiles import finders
 
 # Create your models here.
 
@@ -41,7 +46,22 @@ class ProfessorManager(BaseUserManager):
                               email=self.normalize_email(email),)
         proffesor.set_password(password)
         proffesor.save()
-        student.groups.add(Group.objects.get(name='professor'))
+        try:
+            student.save()
+            body = render_to_string('newStudent.html', 
+                {'first_name': first_name, 'last_name': last_name, 'username': username, 'password': password, 'role': 'docente'},)
+            email_message = EmailMessage(
+                subject='Registro en la plataforma SGE Unicauca',
+                body=body,
+                from_email='sgeunicauca@gmail.com',
+                to=[email],
+            )
+            email_message.content_subtype = 'html'
+            email_message.send()
+            student.groups.add(Group.objects.get(name='professor'))
+        except:
+            print("error")
+        return student
         return proffesor
 
 
@@ -50,16 +70,23 @@ class StudentManager(BaseUserManager):
         email = username + "@unicauca.edu.co"
         student = Student(user_id=user_id, username=username, first_name=first_name, last_name=last_name,
                           email=self.normalize_email(email),)
+        password = get_random_string(length=6)    
         student.set_password(password)
-        student.save()
-        send_mail(
-            'Registro en la plataforma SGE Unicauca',
-            'El estudiante ha sido registrado en la plataforma SGE para poder votar las electivas matriculadas',
-            'mdquilindo@unicauca.edu.co',
-            [email],
-            fail_silently=False,
-        )
-        student.groups.add(Group.objects.get(name='student'))
+        try:
+            student.save()
+            body = render_to_string('newStudent.html', 
+                {'first_name': first_name, 'last_name': last_name, 'username': username, 'password': password, 'role': 'estudiante'},)
+            email_message = EmailMessage(
+                subject='Registro en la plataforma SGE Unicauca',
+                body=body,
+                from_email='sgeunicauca@gmail.com',
+                to=[email],
+            )
+            email_message.content_subtype = 'html'
+            email_message.send()
+            student.groups.add(Group.objects.get(name='student'))
+        except:
+            print("error")
         return student
 
 
@@ -97,25 +124,45 @@ class ClassroomManager(BaseUserManager):
         return classroom
 
 
-class EnrrollmentManager(BaseUserManager):
-    def create_enrrollment(self, student, course):
-        enrrollment = Enrrollment(student=student,
-                                  course=course)
-        enrrollment.save()
-        return enrrollment
-
-
 class CourseManager(BaseUserManager):
     def create_course(self, quota, priority, from_date_vote, until_date_vote, semester, course, professor):
-        course = CourseDetail(quota=quota,
+        course_detail = CourseDetail(quota=quota,
                               priority=priority,
                               from_date_vote=from_date_vote,
                               until_date_vote=until_date_vote,
                               semester=semester,
                               course=course,
                               professor=professor)
-        course.save()
-        return course
+        course_detail.save()
+        body = render_to_string('newElective.html', 
+            {'first_name': professor.first_name, 'last_name': professor.last_name, "name": course.name, "from_date_vote": course_detail.from_date_vote},)
+        email_message = EmailMessage(
+            subject='Registro de electiva | SGE Unicauca',
+            body=body,
+            from_email='sgeunicauca@gmail.com',
+            to=[email],
+        )
+        email_message.content_subtype = 'html'
+        email_message.send()
+        return course_detail
+    
+    
+class EnrrollmentManager(BaseUserManager):
+    def create_enrrollment(self, student, course):
+        enrrollment = Enrrollment(student=student,
+                                  course=course)            
+        enrrollment.save()
+        body = render_to_string('newEnrrollment.html', 
+            {'first_name': student.first_name, 'last_name': student.last_name, "name": course.course.name, "from_date_vote": course.from_date_vote, "until_date_vote": course.until_date_vote},)
+        email_message = EmailMessage(
+            subject='Registro de electivas | SGE Unicauca',
+            body=body,
+            from_email='sgeunicauca@gmail.com',
+            to=[email],
+        )
+        email_message.content_subtype = 'html'
+        email_message.send()
+        return enrrollment
 
 
 class CourseScheduleManager(BaseUserManager):

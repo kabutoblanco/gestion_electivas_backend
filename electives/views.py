@@ -308,10 +308,12 @@ class StudentAPI(APIView):
     serializer_student = StudentSerializer
     serializer_enrrollment = EnrrollmentSerializer
 
-    def get(self, request, format=None):
+    def get(self, format=None):
         queryset = Student.objects.all().values(
-            'id', 'user_id', 'first_name', 'last_name')
+            'id', 'user_id', 'username', 'first_name', 'last_name')
         queryset = json.dumps(list(queryset), cls=DjangoJSONEncoder)
+        print(queryset)
+
         return HttpResponse(queryset, content_type="application/json")
 
     @csrf_exempt
@@ -433,7 +435,6 @@ class CourseAPI(APIView):
     def post(self, request, format=None):
         id = request.data["id"]
         modelo = CourseDetail.objects.get(pk=id)
-        print(modelo)
         modelo.quota = request.data["quota"]
         modelo.priority = request.data["priority"]
         modelo.from_date_vote = request.data["from_date_vote"]
