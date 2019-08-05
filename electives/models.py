@@ -235,7 +235,7 @@ class Program(models.Model):
 
 
 class Course(models.Model):
-    course_id = models.CharField(max_length=32)
+    course_id = models.CharField(max_length=32,unique=True)
     name = models.CharField(max_length=32)
     description = models.CharField(max_length=1024, default="", blank=True)
     date_reg = models.DateTimeField(auto_now=True)
